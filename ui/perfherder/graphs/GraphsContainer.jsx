@@ -13,6 +13,7 @@ import {
   VictoryBrushContainer,
   VictoryScatter,
   createContainer,
+  VictoryTooltip,
 } from 'victory';
 import moment from 'moment';
 import debounce from 'lodash/debounce';
@@ -25,6 +26,67 @@ import { formatNumber } from '../helpers';
 import GraphTooltip from './GraphTooltip';
 
 const VictoryZoomSelectionContainer = createContainer('zoom', 'selection');
+
+const CustomSVGTooltip = props => {
+  const { width, centered, title, aumValue } = props;
+
+  return (
+    <foreignObject width="100%" height="100%">
+      <div
+        xmlns="http://www.w3.org/1999/xhtml"
+        style={{
+          width: `100%`,
+          maxWidth: `${width}px`,
+          height: `auto`,
+          padding: `16px 18px`,
+          background: '#fff',
+          color: '#000',
+          border: `1px solid #fff`,
+          borderRadius: '3px',
+          fontSize: '14px',
+          top: '100px',
+          left: '100px',
+          transform: `translateX(${centered.x}px) translateY(${centered.y}px)`,
+        }}
+      >
+        <header style={{ margin: '0 0 12px' }}>{title}</header>
+        <p style={{ fontSize: '10px' }}>
+          <strong>Balance: </strong>
+          {aumValue}
+        </p>
+      </div>
+    </foreignObject>
+  );
+};
+
+// the tooltip box should be these dimensions
+const chartTooltipDimensions = {
+  width: 160,
+  height: 65,
+};
+
+// the custom point tooltip
+class ChartPointTooltip extends React.Component {
+  render() {
+    const { x, y, pointSize } = this.props;
+    const { width } = chartTooltipDimensions;
+    const { height } = chartTooltipDimensions;
+    const verticalOffset = 20;
+    const centered = {
+      x: x - width / 2,
+      y: y - (height + verticalOffset),
+    };
+
+    return (
+      <CustomSVGTooltip
+        width={width}
+        height={height}
+        centered={centered}
+        {...this.props.datum}
+      />
+    );
+  }
+}
 
 class GraphsContainer extends React.Component {
   constructor(props) {
@@ -399,38 +461,47 @@ class GraphsContainer extends React.Component {
                 }}
                 size={() => 5}
                 data={scatterPlotData}
-                events={[
-                  {
-                    target: 'data',
-                    eventHandlers: {
-                      onClick: () => {
-                        return [
-                          {
-                            target: 'data',
-                            mutation: props => this.setTooltip(props, true),
-                          },
-                        ];
-                      },
-                      onMouseOver: () => {
-                        return [
-                          {
-                            target: 'data',
-                            mutation: props => this.setTooltip(props),
-                          },
-                        ];
-                      },
-                      onMouseOut: () => {
-                        return [
-                          {
-                            target: 'data',
-                            callback: this.hideTooltip,
-                          },
-                        ];
-                      },
-                      onMouseDown: evt => evt.stopPropagation(),
-                    },
-                  },
-                ]}
+                labels={() => ''}
+                labelComponent={
+                  <VictoryTooltip
+                    flyoutComponent={
+                      <ChartPointTooltip
+                      />
+                    }
+                  />
+                }
+                // events={[
+                //   {
+                //     target: 'data',
+                //     eventHandlers: {
+                //       onClick: () => {
+                //         return [
+                //           {
+                //             target: 'data',
+                //             mutation: props => this.setTooltip(props, true),
+                //           },
+                //         ];
+                //       },
+                //       onMouseOver: () => {
+                //         return [
+                //           {
+                //             target: 'data',
+                //             mutation: props => this.setTooltip(props),
+                //           },
+                //         ];
+                //       },
+                //       onMouseOut: () => {
+                //         return [
+                //           {
+                //             target: 'data',
+                //             callback: this.hideTooltip,
+                //           },
+                //         ];
+                //       },
+                //       onMouseDown: evt => evt.stopPropagation(),
+                //     },
+                //   },
+                // ]}
               />
               <VictoryAxis
                 dependentAxis

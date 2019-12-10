@@ -76,7 +76,7 @@ class ChartPointTooltip extends React.Component {
       x: x - width / 2,
       y: y - (height + verticalOffset),
     };
-
+    console.log(x, y, width, height)
     return (
       <CustomSVGTooltip
         width={width}
@@ -463,45 +463,48 @@ class GraphsContainer extends React.Component {
                 data={scatterPlotData}
                 labels={() => ''}
                 labelComponent={
-                  <VictoryTooltip
-                    flyoutComponent={
-                      <ChartPointTooltip
-                      />
-                    }
-                  />
+                  <VictoryTooltip flyoutComponent={<ChartPointTooltip />} />
                 }
-                // events={[
-                //   {
-                //     target: 'data',
-                //     eventHandlers: {
-                //       onClick: () => {
-                //         return [
-                //           {
-                //             target: 'data',
-                //             mutation: props => this.setTooltip(props, true),
-                //           },
-                //         ];
-                //       },
-                //       onMouseOver: () => {
-                //         return [
-                //           {
-                //             target: 'data',
-                //             mutation: props => this.setTooltip(props),
-                //           },
-                //         ];
-                //       },
-                //       onMouseOut: () => {
-                //         return [
-                //           {
-                //             target: 'data',
-                //             callback: this.hideTooltip,
-                //           },
-                //         ];
-                //       },
-                //       onMouseDown: evt => evt.stopPropagation(),
-                //     },
-                //   },
-                // ]}
+                events={[
+                  {
+                    target: 'data',
+                    eventHandlers: {
+                      onClick: () => {
+                        return [
+                          {
+                            target: 'labels',
+                            mutation: (props) => { console.log(props); props.active = true; return props},
+                          },
+                        ];
+                      },
+                      // onClick: () => {
+                      //   return [
+                      //     {
+                      //       target: 'labels',
+                      //       mutation: props => console.log(props),
+                      //     },
+                      //   ];
+                      // },
+                        onMouseOver: () => {
+                          return [
+                            {
+                              target: 'data',
+                              mutation: props => console.log(props),
+                            },
+                          ];
+                        },
+                        onMouseOut: () => {
+                          return [
+                            {
+                              target: 'labels',
+                              callback: props => console.log(props),
+                            },
+                          ];
+                        },
+                      onMouseDown: evt => evt.stopPropagation(),
+                    },
+                  },
+                ]}
               />
               <VictoryAxis
                 dependentAxis

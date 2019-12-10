@@ -76,7 +76,7 @@ class ChartPointTooltip extends React.Component {
       x: x - width / 2,
       y: y - (height + verticalOffset),
     };
-    console.log(x, y, width, height)
+
     return (
       <CustomSVGTooltip
         width={width}
@@ -92,7 +92,6 @@ class GraphsContainer extends React.Component {
   constructor(props) {
     super(props);
     this.updateZoom = debounce(this.updateZoom.bind(this), 500);
-    this.hideTooltip = debounce(this.hideTooltip.bind(this), 250);
     this.tooltip = React.createRef();
     this.leftChartPadding = 25;
     this.rightChartPadding = 10;
@@ -158,7 +157,7 @@ class GraphsContainer extends React.Component {
 
     if (dataPointFound) {
       this.setState({ dataPoint: selectedDataPoint });
-      this.showTooltip(selectedDataPoint, true);
+      // this.showTooltip(selectedDataPoint, true);
     } else {
       updateStateParams({
         errorMessages: [
@@ -223,27 +222,14 @@ class GraphsContainer extends React.Component {
     top: point.y - yOffset,
   });
 
-  showTooltip = (dataPoint, lock) => {
-    const position = this.getTooltipPosition(dataPoint);
-    this.hideTooltip.cancel();
-    this.tooltip.current.style.cssText = `left: ${position.left}px; top: ${position.top}px;`;
-
-    this.setState({
-      showTooltip: true,
-      lockTooltip: lock,
-      dataPoint,
-    });
-  };
-
   setTooltip = (dataPoint, lock = false) => {
     const { lockTooltip } = this.state;
     const { updateStateParams } = this.props;
 
     // we don't want the mouseOver event to reposition the tooltip
-    if (lockTooltip && !lock) {
-      return;
-    }
-    this.showTooltip(dataPoint, lock);
+    // if (lockTooltip && !lock) {
+    //   return;
+    // }
 
     if (lock) {
       updateStateParams({
@@ -255,6 +241,12 @@ class GraphsContainer extends React.Component {
           dataPointId: dataPoint.datum.dataPointId,
         },
       });
+      this.setState({
+        // showTooltip: true,
+        lockTooltip: lock,
+        dataPoint,
+      });
+      return { active: true };
     }
   };
 
@@ -301,14 +293,17 @@ class GraphsContainer extends React.Component {
       : moment.utc().format('MMM DD');
   };
 
-  // debounced
-  hideTooltip() {
-    const { showTooltip, lockTooltip } = this.state;
+  hideTooltip = props => {
+    const { showTooltip, lockTooltip, dataPoint } = this.state;
 
-    if (showTooltip && !lockTooltip) {
-      this.setState({ showTooltip: false });
+    if (
+      lockTooltip &&
+      dataPoint.datum.dataPointId === props.datum.dataPointId
+    ) {
+      return { active: true };
     }
-  }
+    return { active: undefined };
+  };
 
   // debounced
   updateZoom(zoom) {
@@ -473,34 +468,26 @@ class GraphsContainer extends React.Component {
                         return [
                           {
                             target: 'labels',
-                            mutation: (props) => { console.log(props); props.active = true; return props},
+                            mutation: props => this.setTooltip(props, true),
                           },
                         ];
                       },
-                      // onClick: () => {
-                      //   return [
-                      //     {
-                      //       target: 'labels',
-                      //       mutation: props => console.log(props),
-                      //     },
-                      //   ];
-                      // },
-                        onMouseOver: () => {
-                          return [
-                            {
-                              target: 'data',
-                              mutation: props => console.log(props),
-                            },
-                          ];
-                        },
-                        onMouseOut: () => {
-                          return [
-                            {
-                              target: 'labels',
-                              callback: props => console.log(props),
-                            },
-                          ];
-                        },
+                      onMouseOver: () => {
+                        return [
+                          {
+                            target: 'labels',
+                            mutation: () => ({ active: !lockTooltip }),
+                          },
+                        ];
+                      },
+                      onMouseOut: () => {
+                        return [
+                          {
+                            target: 'labels',
+                            mutation: props => this.hideTooltip(props),
+                          },
+                        ];
+                      },
                       onMouseDown: evt => evt.stopPropagation(),
                     },
                   },

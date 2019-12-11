@@ -129,108 +129,142 @@ const GraphTooltip = ({
     );
   };
 
-  return (
-    <div className="body">
-      <div>
-        <p>({testDetails.repository_name})</p>
-        <p className="small">{testDetails.platform}</p>
-      </div>
-      <div>
-        <p>
-          {displayNumber(value)}
-          <span className="text-muted">
-            {testDetails.lowerIsBetter
-              ? ' (lower is better)'
-              : ' (higher is better)'}
-          </span>
-        </p>
-        <p className="small">
-          &Delta; {displayNumber(deltaValue.toFixed(1))} (
-          {(100 * deltaPercent).toFixed(1)}%)
-        </p>
-      </div>
+  // left: point.x - 280 / 2,
+  // top: point.y - yOffset,
 
-      <div>
-        {prevRevision && (
-          <span>
-            <a href={pushUrl} target="_blank" rel="noopener noreferrer">
-              {dataPointDetails.revision.slice(0, 13)}
-            </a>{' '}
-            (
-            {dataPointDetails.jobId && (
-              <a href={jobsUrl} target="_blank" rel="noopener noreferrer">
-                job
-              </a>
+  const verticalOffset = 15;
+  const centered = {
+    x: dataPoint.x - 280 / 2,
+    y: dataPoint.y - (186 + verticalOffset),
+  };
+
+  return (
+    <foreignObject width="100%" height="100%">
+      <div
+        className="graph-tooltip"
+        xmlns="http://www.w3.org/1999/xhtml"
+        style={{
+          width: `100%`,
+          maxWidth: '280px',
+          height: '187px',
+          // padding: `16px 18px`,
+          // background: 'rgba(0, 0, 0, 0.75)',
+          // color: '#000',
+          // border: `1px solid #fff`,
+          // borderRadius: '3px',
+          // fontSize: '14px',
+          top: '100px',
+          left: '500px',
+          // top: dataPoint.x - 280 / 2,
+          // left: dataPoint.y - 15,
+          transform: `translateX(${centered.x}px) translateY(${centered.y}px)`,
+        }}
+      >
+        <div className="body">
+          <div>
+            <p>({testDetails.repository_name})</p>
+            <p className="small">{testDetails.platform}</p>
+          </div>
+          <div>
+            <p>
+              {displayNumber(value)}
+              <span className="text-muted">
+                {testDetails.lowerIsBetter
+                  ? ' (lower is better)'
+                  : ' (higher is better)'}
+              </span>
+            </p>
+            <p className="small">
+              &Delta; {displayNumber(deltaValue.toFixed(1))} (
+              {(100 * deltaPercent).toFixed(1)}%)
+            </p>
+          </div>
+
+          <div>
+            {prevRevision && (
+              <span>
+                <a href={pushUrl} target="_blank" rel="noopener noreferrer">
+                  {dataPointDetails.revision.slice(0, 13)}
+                </a>{' '}
+                (
+                {dataPointDetails.jobId && (
+                  <a href={jobsUrl} target="_blank" rel="noopener noreferrer">
+                    job
+                  </a>
+                )}
+                ,{' '}
+                <a
+                  href={`#/comparesubtest${createQueryParams({
+                    originalProject: testDetails.repository_name,
+                    newProject: testDetails.repository_name,
+                    originalRevision: prevRevision,
+                    newRevision: dataPointDetails.revision,
+                    originalSignature:
+                      testDetails.parentSignature || testDetails.signature_id,
+                    newSignature:
+                      testDetails.parentSignature || testDetails.signature_id,
+                    framework: testDetails.framework_id,
+                  })}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  compare
+                </a>
+                )
+              </span>
             )}
-            ,{' '}
-            <a
-              href={`#/comparesubtest${createQueryParams({
-                originalProject: testDetails.repository_name,
-                newProject: testDetails.repository_name,
-                originalRevision: prevRevision,
-                newRevision: dataPointDetails.revision,
-                originalSignature:
-                  testDetails.parentSignature || testDetails.signature_id,
-                newSignature:
-                  testDetails.parentSignature || testDetails.signature_id,
-                framework: testDetails.framework_id,
-              })}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              compare
-            </a>
-            )
-          </span>
-        )}
-        {dataPointDetails.alertSummary && (
-          <p>
-            <a
-              href={`perf.html#/alerts?id=${dataPointDetails.alertSummary.id}`}
-            >
-              <FontAwesomeIcon
-                className="text-warning"
-                icon={faExclamationCircle}
-                size="sm"
-              />
-              {` Alert # ${dataPointDetails.alertSummary.id}`}
-            </a>
-            <span className="text-muted">
-              {` - ${alertStatus} `}
-              {alert && alert.related_summary_id && (
-                <span>
-                  {alert.related_summary_id !== dataPointDetails.alertSummary.id
-                    ? 'to'
-                    : 'from'}
-                  <a
-                    href={`#/alerts?id=${alert.related_summary_id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >{` alert # ${alert.related_summary_id}`}</a>
+            {dataPointDetails.alertSummary && (
+              <p>
+                <a
+                  href={`perf.html#/alerts?id=${dataPointDetails.alertSummary.id}`}
+                >
+                  <FontAwesomeIcon
+                    className="text-warning"
+                    icon={faExclamationCircle}
+                    size="sm"
+                  />
+                  {` Alert # ${dataPointDetails.alertSummary.id}`}
+                </a>
+                <span className="text-muted">
+                  {` - ${alertStatus} `}
+                  {alert && alert.related_summary_id && (
+                    <span>
+                      {alert.related_summary_id !==
+                      dataPointDetails.alertSummary.id
+                        ? 'to'
+                        : 'from'}
+                      <a
+                        href={`#/alerts?id=${alert.related_summary_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >{` alert # ${alert.related_summary_id}`}</a>
+                    </span>
+                  )}
                 </span>
-              )}
-            </span>
-          </p>
-        )}
-        {!dataPointDetails.alertSummary && prevPushId && (
-          <p className="pt-2">
-            {user.isStaff ? (
-              <Button color="info" outline size="sm" onClick={createAlert}>
-                create alert
-              </Button>
-            ) : (
-              <span>(log in as a a sheriff to create)</span>
+              </p>
             )}
-          </p>
-        )}
-        <p className="small text-white pt-2">{`${moment
-          .utc(dataPointDetails.x)
-          .format('MMM DD hh:mm:ss')} UTC`}</p>
-        {Boolean(retriggerNum) && (
-          <p className="small">{`Retriggers: ${retriggerNum}`}</p>
-        )}
+            {!dataPointDetails.alertSummary && prevPushId && (
+              <p className="pt-2">
+                {user.isStaff ? (
+                  <Button color="info" outline size="sm" onClick={createAlert}>
+                    create alert
+                  </Button>
+                ) : (
+                  <span>(log in as a a sheriff to create)</span>
+                )}
+              </p>
+            )}
+            <p className="small text-white pt-2">{`${moment
+              .utc(dataPointDetails.x)
+              .format('MMM DD hh:mm:ss')} UTC`}</p>
+            {Boolean(retriggerNum) && (
+              <p className="small">{`Retriggers: ${retriggerNum}`}</p>
+            )}
+          </div>
+        </div>
+        <div className="tip" />
       </div>
-    </div>
+    </foreignObject>
   );
 };
 

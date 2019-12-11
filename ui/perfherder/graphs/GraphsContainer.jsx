@@ -54,6 +54,7 @@ const CustomSVGTooltip = props => {
           <strong>Balance: </strong>
           {aumValue}
         </p>
+        <div className="tip" />
       </div>
     </foreignObject>
   );
@@ -242,13 +243,13 @@ class GraphsContainer extends React.Component {
           dataPointId: dataPoint.datum.dataPointId,
         },
       });
-      this.setState({
-        // showTooltip: true,
-        lockTooltip: lock,
-        dataPoint,
-      });
-      return { active: true };
     }
+    this.setState({
+      // showTooltip: true,
+      lockTooltip: lock,
+      dataPoint,
+    });
+    return { active: true };
   };
 
   closeTooltip = () => {
@@ -372,11 +373,11 @@ class GraphsContainer extends React.Component {
     return (
       <React.Fragment>
         <div
-          data-testid="graph-tooltip"
-          className={`graph-tooltip ${showTooltip ? 'show' : 'hide'} ${
-            lockTooltip ? 'locked' : ''
-          }`}
-          ref={this.tooltip}
+        // data-testid="graph-tooltip"
+        // className={`graph-tooltip ${showTooltip ? 'show' : 'hide'} ${
+        //   lockTooltip ? 'locked' : ''
+        // }`}
+        // ref={this.tooltip}
         >
           <span className="close mr-3 my-2 ml-2" onClick={this.closeTooltip}>
             <FontAwesomeIcon
@@ -386,10 +387,6 @@ class GraphsContainer extends React.Component {
               title="close tooltip"
             />
           </span>
-          {dataPoint && showTooltip && (
-            <GraphTooltip dataPoint={dataPoint} {...this.props} />
-          )}
-          <div className="tip" />
         </div>
         <Row>
           <Col className="p-0 col-md-auto">
@@ -486,7 +483,11 @@ class GraphsContainer extends React.Component {
                 data={scatterPlotData}
                 labels={() => ''}
                 labelComponent={
-                  <VictoryTooltip flyoutComponent={<ChartPointTooltip />} />
+                  <VictoryTooltip
+                    flyoutComponent={
+                      <GraphTooltip dataPoint={dataPoint} {...this.props} />
+                    }
+                  />
                 }
                 events={[
                   {
@@ -509,7 +510,7 @@ class GraphsContainer extends React.Component {
                         return [
                           {
                             target: 'labels',
-                            mutation: () => ({ active: !lockTooltip }),
+                            mutation: props => this.setTooltip(props),
                           },
                         ];
                       },

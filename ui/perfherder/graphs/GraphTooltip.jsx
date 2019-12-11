@@ -129,36 +129,19 @@ const GraphTooltip = ({
     );
   };
 
-  // left: point.x - 280 / 2,
-  // top: point.y - yOffset,
-
   const verticalOffset = 15;
   const centered = {
     x: dataPoint.x - 280 / 2,
     y: dataPoint.y - (186 + verticalOffset),
   };
 
+  // Todo needs z-index
   return (
-    <foreignObject width="100%" height="100%">
+    // solution adapted from here: https://spectrum.chat/victory/general/datacomponent-and-labelcomponent-on-the-same-chart-component~bc94b716-bb76-4bf9-86da-c87e1f38e370
+    <foreignObject width="100%" height="100%" x={centered.x} y={centered.y}>
       <div
         className="graph-tooltip"
         xmlns="http://www.w3.org/1999/xhtml"
-        style={{
-          width: `100%`,
-          maxWidth: '280px',
-          height: '187px',
-          // padding: `16px 18px`,
-          // background: 'rgba(0, 0, 0, 0.75)',
-          // color: '#000',
-          // border: `1px solid #fff`,
-          // borderRadius: '3px',
-          // fontSize: '14px',
-          top: '100px',
-          left: '500px',
-          // top: dataPoint.x - 280 / 2,
-          // left: dataPoint.y - 15,
-          transform: `translateX(${centered.x}px) translateY(${centered.y}px)`,
-        }}
       >
         <div className="body">
           <div>

@@ -103,6 +103,7 @@ class GraphsContainer extends React.Component {
       showTooltip: false,
       lockTooltip: false,
       dataPoint: this.props.selectedDataPoint,
+      externalMutation: undefined,
     };
   }
 
@@ -315,6 +316,31 @@ class GraphsContainer extends React.Component {
     this.props.updateStateParams({ zoom });
   }
 
+  removeMutation = () => {
+    this.setState({
+      externalMutation: undefined,
+    });
+  };
+
+  closeTooltip = () => {
+    this.setState({
+      externalMutation: [
+        {
+          childName: 'scatter-plot',
+          target: 'labels',
+          eventKey: 'all',
+          mutation: props => {
+            if (props.active === true) {
+              console.log(props);
+            }
+            return props;
+          },
+          callback: this.removeMutation,
+        },
+      ],
+    });
+  };
+
   render() {
     const { testData, zoom, highlightedRevisions } = this.props;
     const {
@@ -323,6 +349,7 @@ class GraphsContainer extends React.Component {
       showTooltip,
       lockTooltip,
       dataPoint,
+      externalMutation,
     } = this.state;
 
     const highlightPoints = !!highlights.length;
@@ -421,6 +448,7 @@ class GraphsContainer extends React.Component {
                   allowZoom={false}
                 />
               }
+              externalEventMutations={externalMutation}
             >
               {highlights.length > 0 &&
                 highlights.map(item => (
@@ -466,6 +494,11 @@ class GraphsContainer extends React.Component {
                     eventHandlers: {
                       onClick: () => {
                         return [
+                          {
+                            target: 'labels',
+                            eventKey: 'all',
+                            mutation: props => {},
+                          },
                           {
                             target: 'labels',
                             mutation: props => this.setTooltip(props, true),
